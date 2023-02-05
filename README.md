@@ -10,6 +10,7 @@ A simple one-page to-do project based on pure javascript, css, html. it can part
 - import and export items to json
 - border animation (looks cool heh)
 - a simple but beautiful design in my opinion
+
 https://saikoful.github.io/todo/
 ![App Screenshot](https://i.imgur.com/3XIRXiq.png)
 
