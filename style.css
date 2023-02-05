@@ -1,0 +1,175 @@
+@keyframes border-animation {
+    0% {
+        border-color: #f0f5f9;
+    }
+
+    25% {
+        border-color: #cac9c9;
+    }
+
+    50% {
+        border-color: #cec7c1;
+    }
+
+    75% {
+        border-color: #bdbdbd;
+    }
+
+    100% {
+        border-color: #fff;
+    }
+}
+
+:root {
+    /* colours, bg - background, fg - foreground, ac - accent color*/
+    --bg: #2b2b2b;
+    --fg: #fff;
+    --ac: #313131;
+    --ac2: #333;
+    /* font-sizes, border-radius and etc. */
+    --br: 0.35em;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 50vh;
+    border-radius: 10px;
+    border: 2px solid var(--fg);
+    margin-top: 3%;
+    animation: border-animation 5s ease-in-out infinite;
+}
+
+.dark-theme {
+    background-color: var(--bg);
+    color: var(--fg);
+}
+
+header {
+    background-color: var(--ac);
+    display: flex;
+    justify-content: center;
+    padding: 1em 0;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+}
+
+header h1 {
+    margin: 0;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2em 2vh;
+    padding-bottom: 0px;
+}
+
+#todo-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+}
+
+#todo-input {
+    padding: 0.5em;
+    border-top-left-radius: var(--br);
+    border-bottom-left-radius: var(--br);
+    border: none;
+    font-size: 1em;
+    width: 100%;
+}
+
+#add-todo {
+    padding: 0.5em;
+    font-size: 1em;
+    border-top-right-radius: var(--br);
+    border-bottom-right-radius: var(--br);
+    background-color: var(--ac);
+    color: var(--fg);
+    border: none;
+    font-size: 1em;
+}
+
+#todo-list {
+    list-style: none;
+    padding: 0;
+    margin: 1em 0;
+    width: 100%;
+    max-width: 400px;
+}
+
+#todo-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5em;
+    margin: 0.5em 0;
+    background-color: var(--ac2);
+    border-radius: var(--br);
+    font-size: 1em;
+}
+
+#todo-list li span {
+    flex: 1;
+}
+
+#todo-list li button {
+    padding: 0.25em 0.5em;
+    background-color: var(--ac);
+    color: var(--fg);
+    border: none;
+    border-radius: var(--br);
+    font-size: 1em;
+    margin-right: 0.2em;
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    padding: 1em 0;
+}
+
+footer button {
+    background-color: var(--ac);
+    color: var(--fg);
+    border: none;
+    border-radius: var(--br);
+    padding: 0.6vh 1.5vh;
+    font-size: 1.7vh;
+    margin: 1vh;
+}
+
+.edit-input {
+    color: #333
+}
+
+button:hover {
+    cursor: pointer;
+    transform: scale(1.2);
+    transition: 0.5s ease-in-out;
+}
+
+button {
+    transition: 0.5s ease-in-out;
+}
+
+textarea {
+    color: var(--fg);
+    background-color: var(--ac2);
+    border: none;
+    border-radius: var(--br);
+    width: 100%;
+    height: 6rem;
+    font-size: 1em;
+    outline: none;
+    -moz-appearance: none;
+}
