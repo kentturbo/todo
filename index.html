@@ -3,27 +3,341 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AetherTodo - Secure Productivity Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="style.css">
-  <title>To-Do App</title>
+  <link rel="icon" type="image/png" href="files/ico.png">
 </head>
 <body class="dark-theme">
-    <section class="container">
-        <header>
-            <h1>To-Do App</h1>
-          </header>
-          <main>
-            <div id="todo-form">
-              <input type="text" id="todo-input" placeholder="Enter your task">
-              <button id="add-todo">Add</button>
-            </div>
-            <ul id="todo-list"></ul>
-          </main>
-          <footer>
-            <button id="export-todos">Export</button>
-            <button id="import-todos">Import</button>
-          </footer>
-    </section>
   
+  <!-- BACKGROUND ANIMATED GLOW ORBS -->
+  <div class="bg-glow">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- LOCK SCREEN / AUTH OVERLAY -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card glass-panel">
+      <div class="auth-header">
+        <div class="logo-container">
+          <i data-lucide="shield-check" class="logo-icon"></i>
+        </div>
+        <h1 class="auth-title">AetherTodo</h1>
+        <p class="auth-subtitle" id="auth-subtitle">Secure, local-first encrypted workspace</p>
+      </div>
+
+      <!-- Setup Mode Form -->
+      <form id="setup-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="new-password">Set Master Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="key-round" class="input-icon"></i>
+            <input type="password" id="new-password" placeholder="Enter strong password" required minlength="4">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Confirm Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="shield-alert" class="input-icon"></i>
+            <input type="password" id="confirm-password" placeholder="Repeat password" required minlength="4">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Create Secured Workspace</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+        <p class="auth-info">
+          <i data-lucide="info" class="inline-icon"></i>
+          Your password is used locally to derive an encryption key. It is never sent to any server. If lost, your data cannot be recovered.
+        </p>
+      </form>
+
+      <!-- Unlock Mode Form -->
+      <form id="unlock-form" class="auth-form hidden">
+        <div class="form-group">
+          <label for="unlock-password">Master Password</label>
+          <div class="input-wrapper">
+            <i data-lucide="lock" class="input-icon"></i>
+            <input type="password" id="unlock-password" placeholder="Enter password to unlock" required>
+          </div>
+          <span id="auth-error" class="error-text hidden">Invalid password. Please try again.</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>Unlock Workspace</span>
+          <i data-lucide="unlock"></i>
+        </button>
+        <div class="auth-footer-actions">
+          <a href="#" id="reset-workspace-link" class="danger-link">Reset Database (Wipe all data)</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER (Hidden initially until unlocked) -->
+  <div id="app-container" class="app-container hidden">
+    <!-- TOP NAVIGATION -->
+    <header class="app-header glass-panel">
+      <div class="header-left">
+        <div class="avatar-container">
+          <img src="files/a.gif" alt="Avatar" class="avatar">
+          <div class="avatar-ring"></div>
+        </div>
+        <div>
+          <h2 class="welcome-text">Productivity Hub</h2>
+          <p class="date-text" id="current-date">Monday, July 6</p>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- AUDIO PLAYER INTEGRATION -->
+        <div class="music-player-mini">
+          <div class="vinyl-container">
+            <img src="files/a.gif" alt="Vinyl" class="vinyl-disk" id="vinyl-disk">
+            <div class="vinyl-center"></div>
+          </div>
+          <div class="music-info">
+            <span class="music-title">Aether Ambient</span>
+            <div class="sound-waves" id="sound-waves">
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+              <div class="wave-bar"></div>
+            </div>
+          </div>
+          <div class="player-controls">
+            <button id="music-play-btn" class="icon-btn-p" title="Play background music">
+              <i data-lucide="play" id="music-play-icon"></i>
+            </button>
+            <div class="volume-popover">
+              <button id="volume-btn" class="icon-btn-p" title="Volume">
+                <i data-lucide="volume-2" id="volume-icon"></i>
+              </button>
+              <div class="volume-slider-wrapper">
+                <input type="range" id="music-volume" min="0" max="1" step="0.05" value="0.3">
+              </div>
+            </div>
+          </div>
+          <audio id="bg-audio" src="files/song.mp3" loop></audio>
+        </div>
+
+        <!-- THEME & SESSION LOCK -->
+        <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+          <i data-lucide="sun" class="sun-icon"></i>
+          <i data-lucide="moon" class="moon-icon"></i>
+        </button>
+        
+        <button id="manual-lock-btn" class="btn btn-secondary" title="Lock workspace">
+          <i data-lucide="lock"></i>
+          <span>Lock</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD GRID -->
+    <div class="dashboard-grid">
+      <!-- LEFT SIDEBAR: INTEGRATIONS -->
+      <aside class="sidebar-col">
+        
+        <!-- WIDGET 1: STATS PANEL -->
+        <div class="widget-card stats-widget glass-panel">
+          <h3 class="widget-title"><i data-lucide="bar-chart-2"></i> Analytics</h3>
+          <div class="stats-progress-container">
+            <div class="stats-radial-container">
+              <svg class="radial-progress-svg" viewBox="0 0 100 100">
+                <circle class="radial-bg" cx="50" cy="50" r="40"></circle>
+                <circle class="radial-bar" id="stats-radial-bar" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+              </svg>
+              <div class="radial-label" id="stats-radial-percent">0%</div>
+            </div>
+            <div class="stats-text-container">
+              <div class="stat-row">
+                <span class="stat-label">Completed</span>
+                <span class="stat-value text-success" id="stats-completed">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Pending</span>
+                <span class="stat-value text-warning" id="stats-pending">0</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Total</span>
+                <span class="stat-value" id="stats-total">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WIDGET 2: POMODORO TIMER -->
+        <div class="widget-card pomodoro-widget glass-panel">
+          <div class="widget-header">
+            <h3 class="widget-title"><i data-lucide="timer"></i> Pomodoro</h3>
+            <span class="pomo-count" id="pomo-count">Completed: 0</span>
+          </div>
+          <div class="pomo-modes">
+            <button class="pomo-mode-btn active" data-mode="work">Work</button>
+            <button class="pomo-mode-btn" data-mode="short">Short</button>
+            <button class="pomo-mode-btn" data-mode="long">Long</button>
+          </div>
+          <div class="pomo-timer-display">
+            <svg class="pomo-circle-svg" viewBox="0 0 120 120">
+              <circle class="pomo-circle-bg" cx="60" cy="60" r="54"></circle>
+              <circle class="pomo-circle-progress" id="pomo-progress-ring" cx="60" cy="60" r="54" stroke-dasharray="339.3" stroke-dashoffset="0"></circle>
+            </svg>
+            <span class="pomo-time" id="pomo-time">25:00</span>
+          </div>
+          <div class="pomo-controls">
+            <button id="pomo-start-btn" class="btn btn-primary"><i data-lucide="play"></i> Start</button>
+            <button id="pomo-reset-btn" class="btn btn-secondary"><i data-lucide="rotate-ccw"></i> Reset</button>
+          </div>
+        </div>
+
+        <!-- WIDGET 3: WEATHER INTEGRATION -->
+        <div class="widget-card weather-widget glass-panel">
+          <h3 class="widget-title"><i data-lucide="cloud-sun"></i> Weather</h3>
+          <div class="weather-search">
+            <input type="text" id="weather-city-input" placeholder="Enter city (e.g. Almaty)">
+            <button id="weather-search-btn" class="icon-btn"><i data-lucide="search"></i></button>
+          </div>
+          <div class="weather-content" id="weather-content">
+            <!-- Dynamically populated or offline fallback -->
+            <div class="weather-loading">Loading forecast...</div>
+          </div>
+        </div>
+
+        <!-- WIDGET 4: MOTIVATIONAL QUOTES -->
+        <div class="widget-card quote-widget glass-panel">
+          <h3 class="widget-title"><i data-lucide="quote"></i> Daily Wisdom</h3>
+          <p class="quote-text" id="quote-text">"The secret of getting ahead is getting started."</p>
+          <p class="quote-author" id="quote-author">— Mark Twain</p>
+          <button id="new-quote-btn" class="text-btn"><i data-lucide="refresh-cw"></i> Get Another</button>
+        </div>
+
+      </aside>
+
+      <!-- RIGHT COLUMN: TODO WORKSPACE -->
+      <main class="todo-col">
+        <!-- ADD TASK FORM PANEL -->
+        <div class="todo-form-panel glass-panel">
+          <h3 class="panel-title"><i data-lucide="plus-circle"></i> Create New Task</h3>
+          <form id="todo-form-element">
+            <div class="form-row-main">
+              <input type="text" id="todo-input" placeholder="What needs to be done?" required>
+              <button type="submit" class="btn btn-primary" id="add-todo">
+                <i data-lucide="plus"></i> Add
+              </button>
+            </div>
+            
+            <div class="form-options-toggle">
+              <button type="button" id="toggle-details-btn" class="text-btn">
+                <i data-lucide="sliders-horizontal" style="width: 14px; height: 14px;"></i>
+                <span>Advanced Options</span>
+              </button>
+            </div>
+            
+            <div id="form-details-collapse" class="form-row-details collapsed">
+              <!-- Category Selector -->
+              <div class="input-group-inline">
+                <label for="todo-category"><i data-lucide="tag"></i> Category</label>
+                <select id="todo-category">
+                  <option value="Personal" selected>📁 Personal</option>
+                  <option value="Work">💼 Work</option>
+                  <option value="Shopping">🛒 Shopping</option>
+                  <option value="Health">❤️ Health</option>
+                  <option value="Ideas">💡 Ideas</option>
+                </select>
+              </div>
+
+              <!-- Priority Selector -->
+              <div class="input-group-inline">
+                <label><i data-lucide="flag"></i> Priority</label>
+                <div class="priority-selector">
+                  <label class="priority-btn priority-low" title="Low Priority">
+                    <input type="radio" name="priority" value="Low" checked>
+                    <span>Low</span>
+                  </label>
+                  <label class="priority-btn priority-medium" title="Medium Priority">
+                    <input type="radio" name="priority" value="Medium">
+                    <span>Medium</span>
+                  </label>
+                  <label class="priority-btn priority-high" title="High Priority">
+                    <input type="radio" name="priority" value="High">
+                    <span>High</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Due Date Input -->
+              <div class="input-group-inline">
+                <label for="todo-due-date"><i data-lucide="calendar"></i> Due Date</label>
+                <input type="date" id="todo-due-date">
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- SEARCH, FILTERS & SORTING BAR -->
+        <div class="filters-panel glass-panel">
+          <div class="filter-search-wrapper">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="todo-search-input" placeholder="Search tasks by name or notes...">
+          </div>
+          
+          <div class="filters-actions">
+            <!-- Filter Tabs -->
+            <div class="filter-tabs">
+              <button class="filter-tab active" data-filter="all">All</button>
+              <button class="filter-tab" data-filter="active">Active</button>
+              <button class="filter-tab" data-filter="completed">Completed</button>
+            </div>
+
+            <!-- Sorting Select -->
+            <div class="sort-selector-wrapper">
+              <i data-lucide="arrow-up-down"></i>
+              <select id="todo-sort-select">
+                <option value="date-created-desc">Created (Newest)</option>
+                <option value="date-created-asc">Created (Oldest)</option>
+                <option value="due-date-asc">Due Date (Earliest)</option>
+                <option value="priority-desc">Priority (Highest)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- TODO LIST CONTAINER -->
+        <ul id="todo-list" class="todo-list">
+          <!-- Dynamically populated tasks -->
+        </ul>
+      </main>
+    </div>
+
+    <!-- APP FOOTER -->
+    <footer class="app-footer glass-panel">
+      <div class="footer-left">
+        <div class="auto-lock-settings">
+          <label for="autolock-select"><i data-lucide="hourglass"></i> Auto-lock in:</label>
+          <select id="autolock-select">
+            <option value="60">1 Minute</option>
+            <option value="300" selected>5 Minutes</option>
+            <option value="900">15 Minutes</option>
+            <option value="1800">30 Minutes</option>
+            <option value="0">Never</option>
+          </select>
+        </div>
+      </div>
+      <div class="footer-right">
+        <button id="export-todos" class="btn btn-secondary"><i data-lucide="download"></i> Export Data</button>
+        <button id="import-todos" class="btn btn-secondary"><i data-lucide="upload"></i> Import Data</button>
+        <button id="wipe-data-btn" class="btn btn-danger-outline"><i data-lucide="trash-2"></i> Reset Database</button>
+      </div>
+    </footer>
+  </div>
+
   <script src="app.js"></script>
 </body>
 </html>
